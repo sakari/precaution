@@ -6,6 +6,7 @@ describe('Interface', function(){
 	     Example.prototype.exampleMethod = function(a) {
 		 return this.attribute;
 	     };
+
 	     describe('#check', function() {
 			  it('returns a checked object', function() {
 				 expect(new Interface('If')
@@ -13,24 +14,26 @@ describe('Interface', function(){
 				     .toBeDefined();
 			     });
 		      });
-	     describe('checked object', function() {
-			  it('has methods defined in the interface ', 
-			     function() {
-				 expect(new Interface('If')
-					.method('exampleMethod')
-					.check(new Example())
-					.exampleMethod(123))
-				     .toEqual('attribute value');
-			     });
 
-			  it('does not have methods not in the interface',
-			    function() {
-				expect(new Interface('If')
-				       .check(new Example())
-				       .exampleMethod)
-				    .toBeUndefined();
+	     describe('#and', function() {
+			  it('allows combining interfaces', 
+			     function() {
+				 var p = {
+				     'aMethod': function() {},
+				     'bMethod': function() {},
+				     'cMethod': function() {}
+				 };
+				 p = new Interface('a')
+				     .method('aMethod')
+				     .and(new Interface('b')
+					  .method('bMethod'))
+				     .check(p);
+				 expect(p.aMethod).toBeDefined();
+				 expect(p.bMethod).toBeDefined();
+				 expect(p.cMethod).toBeUndefined();
 			    });
 		      });
+
 	     describe('#method', function() {
 			  it('defines a method required for the interface', 
 			     function() {
@@ -40,6 +43,14 @@ describe('Interface', function(){
 						.check(new Example());
 					}).toThrow();
 			    });
+
+			  it('does not allow starting underscore', 
+			     function() {
+				 expect(function() {
+					    new Interface('i')
+						.method('_private');
+					}).toThrow();
+			     });
 
 			  it('may define a signature for the method', 
 			    function() {
@@ -59,6 +70,47 @@ describe('Interface', function(){
 			    });
 		      });
 	 });
+
+describe('CheckedObject', function() {
+	     function Example() {
+		 this.attribute = 'attribute value';
+	     };
+	     Example.prototype.exampleMethod = function(a) {
+		 return this.attribute;
+	     };
+
+	     it('has methods defined in the interface ', 
+		function() {
+		    expect(new Interface('If')
+			   .method('exampleMethod')
+			   .check(new Example())
+			   .exampleMethod(123))
+			.toEqual('attribute value');
+		});
+
+	     it('does not have methods not in the interface',
+		function() {
+		    expect(new Interface('If')
+			   .check(new Example())
+			   .exampleMethod)
+			.toBeUndefined();
+		});
+
+	     describe('#_interfaces', function() {
+			  it('return all interfaces', 
+			     function() {
+				 var p = {};
+				 p = new Interface('a')
+				     .and(new Interface('b'))
+				     .check(p);
+				 expect(p._interfaces().a)
+				     .toBeDefined();
+				 expect(p._interfaces().b)
+				     .toBeDefined();
+			     });
+		      });
+	 });
+
 
 describe('Signature', function() {
 	     describe('#argument', function() {

@@ -2,29 +2,52 @@
 function Interface(interfaceName) {
     this._name = interfaceName;
     this._methods = {};
+    this._interfaces = [this];
 }
 
 Interface.prototype.method = function(name, signature) {
+    if (name.match(/^_/))
+	throw new Error('Interfaces may not contain methods starting with "_"');
     if (this._methods[name])
 	throw new Error('Duplicate method name in interface: ' + name);
     this._methods[name] = signature || new Signature();
     return this;
 };
 
+Interface.prototype.and = function(i) {
+    this._interfaces.push(i);
+    return this;
+};
+
 Interface.prototype.check = function(ob) {
-    var checkedObj = {
-	_object: ob
-    };
-    for(var key in this._methods) {
-	if (!ob[key]) {
+    var checked = new CheckedObject(ob);
+    for (var i in this._interfaces)
+	checked._applyInterface(this._interfaces[i]);
+    return checked;
+};
+
+function CheckedObject (ob) {
+    this._object = ob;
+    this.__interfaces = {};
+};
+
+CheckedObject.prototype._interfaces = function (ob) {
+    return this.__interfaces;
+};
+
+CheckedObject.prototype._applyInterface = function (i) {
+    var self = this;
+    for(var key in i._methods) {
+	if (!this._object[key]) {
 	    throw new Error('Required method missing: ' + key);
 	}
-	checkedObj[key] = this._methods[key]
+	this[key] = i._methods[key]
 	    .check(function() {
-		       return ob[key].apply(ob, arguments);
+		       return self._object[key].apply(self._object, arguments);
 		   });
     }
-    return checkedObj;
+    this.__interfaces[i._name] = i;
+    return this;
 };
 
 function Signature() {
