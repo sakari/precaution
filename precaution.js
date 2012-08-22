@@ -13,7 +13,7 @@ function Interface(interfaceName) {
 Interface.prototype.method = function(name, signature) {
     if (this._methods[name])
 	throw new Error('Duplicate method name in interface: ' + name);
-    this._methods[name] = signature;
+    this._methods[name] = signature || new Signature();
     return this;
 };
 
@@ -25,19 +25,25 @@ Interface.prototype.check = function(ob) {
 	if (!ob[key]) {
 	    throw new Error('Required method missing: ' + key);
 	}
-	checkedObj[key] = function() {
-	    return ob[key].apply(ob, arguments);
-	};
+	checkedObj[key] = this._methods[key]
+	    .check(function() {
+		       return ob[key].apply(ob, arguments);
+		   });
     }
     return checkedObj;
 };
 
 function Signature() {
-    this._arguments = [];    
+    this._argument = [];    
 }
 
 Signature.prototype.argument = function(i) {
-    this._arguments.push(i);
+    this._argument.push(i || function() {});
+    return this;
+};
+
+Signature.prototype.arguments = function(i) {
+    this._arguments = i;
     return this;
 };
 
@@ -47,22 +53,24 @@ Signature.prototype.returns = function(i) {
 };
 
 Signature.prototype._checkArguments = function(args) {
-    for (var i in this._arguments) {
-	this._arguments[i](args[i]);
+    for (var i in this._argument) {
+	this._argument[i].call(this._argument[i], args[i]);
     }
+    if (this._arguments)
+	this._arguments.call(this._arguments, args);
 };
 
 Signature.prototype._checkReturn = function(val) {
     if (this._returns)
-	this._returns(val);
+	this._returns.call(this._returns, val);
     return val;
 };
 
-Signature.prototype.check = function(fn, obj) {
+Signature.prototype.check = function(fn) {
     var self = this;
     return function() {
 	self._checkArguments(arguments);
-	return self._checkReturn(fn.apply(obj || null, arguments));
+	return self._checkReturn(fn.apply(null, arguments));
     };
 };
 

@@ -1,9 +1,10 @@
 
 describe('Interface', function(){
 	     function Example() {
+		 this.attribute = 'attribute value';
 	     };
 	     Example.prototype.exampleMethod = function(a) {
-		 return a;
+		 return this.attribute;
 	     };
 	     describe('#check', function() {
 			  it('returns a checked object', function() {
@@ -19,7 +20,7 @@ describe('Interface', function(){
 					.method('exampleMethod')
 					.check(new Example())
 					.exampleMethod(123))
-				     .toEqual(123);
+				     .toEqual('attribute value');
 			     });
 
 			  it('does not have methods not in the interface',
@@ -42,11 +43,19 @@ describe('Interface', function(){
 
 			  it('may define a signature for the method', 
 			    function() {
-				expect(new Interface('If')
-				       .method('exampleMethod', 
-					       new Signature())
-				       .check(new Example()))
-				.toBeDefined();
+				var obj = new Interface('If')
+				    .method('exampleMethod', 
+					    new Signature()
+					    .argument(function(a) {
+							  if (a < 0)
+							      throw new Error();
+						      }))
+				    .check(new Example());
+				expect(obj.exampleMethod(1))
+				    .toEqual('attribute value');
+				expect(function() {
+					   obj.exampleMethod(-1);
+				       }).toThrow();
 			    });
 		      });
 	 });
@@ -68,7 +77,40 @@ describe('Signature', function() {
 					}).toThrow();
 				 expect(fun(1)).toEqual(1);
 			     });
+
+			  it('may take anything with `.call` as checker', 
+			    function() {
+				var check = {
+				    call: function() {
+					if (this.throw)
+					    throw new Error();
+				    }
+				};
+				var fun = new Signature()
+				    .argument(check)
+				    .check(function() { return 1; });
+				expect(fun()).toEqual(1);
+				expect(function() {
+					   check.throw = true;
+					   fun();
+				       }).toThrow();
+			    });
 		      });
+	     describe('#arguments', function() {
+			  it('adds a verifier for all arguments', function() {
+				var fun = new Signature()
+				     .arguments(function(args) {
+						    if (args.length !== 1)
+							throw new Error();
+						})
+				     .check(function() { return 1; });
+				 expect(function() { 
+					    fun(); 
+					}).toThrow();
+				 expect(fun(1)).toEqual(1);
+			     });
+		      });
+
 	     describe('#returns', function() {
 			  it('may define a verifier fun for the result', 
 			    function() {
@@ -82,20 +124,6 @@ describe('Signature', function() {
 				       fun(0);
 				       }).toThrow();
 				expect(fun(1)).toEqual(1);
-			    });
-		      });
-	     describe('#check', function() {
-			  it('may add a context for the checked function', 
-			    function() {
-				var obj = {
-				    method: function() {
-					return this.value;
-				    },
-				    value: 123
-				};
-				expect(new Signature()
-				       .check(obj.method, obj)())
-				    .toEqual(123);
 			    });
 		      });
 	 });
