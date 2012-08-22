@@ -1,9 +1,3 @@
-function $$(value) {
-    function Contract(value) {
-	this._object = value;
-    }
-    return new Contract(value);
-}
 
 function Interface(interfaceName) {
     this._name = interfaceName;
@@ -53,11 +47,19 @@ Signature.prototype.returns = function(i) {
 };
 
 Signature.prototype._checkArguments = function(args) {
-    for (var i in this._argument) {
-	this._argument[i].call(this._argument[i], args[i]);
+    var hackedArgs = [];
+    for (var i = 0; i < this._argument.length; i++) {
+	var a = this._argument[i].call(this._argument[i], args[i]);
+	if (args.length > i)
+	    hackedArgs.push(a === undefined ? args[i] : a);
     }
+    while(hackedArgs.length < args.length)
+	hackedArgs.push(args[i++]);
+    console.assert(hackedArgs.length === args.length);
+
     if (this._arguments)
 	this._arguments.call(this._arguments, args);
+    return hackedArgs;
 };
 
 Signature.prototype._checkReturn = function(val) {
@@ -69,8 +71,9 @@ Signature.prototype._checkReturn = function(val) {
 Signature.prototype.check = function(fn) {
     var self = this;
     return function() {
-	self._checkArguments(arguments);
-	return self._checkReturn(fn.apply(null, arguments));
+	return self.
+	    _checkReturn(fn.apply(null,
+				  self._checkArguments(arguments)));
     };
 };
 

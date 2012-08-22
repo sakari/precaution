@@ -95,6 +95,27 @@ describe('Signature', function() {
 					   fun();
 				       }).toThrow();
 			    });
+			  
+			  it('may return a value to be used in the checked fun', 
+			     function() {
+				 var fun = new Signature()
+				     .argument(function() {
+						   return 2;
+					       })
+				     .check(function(a) { return a; });
+				 expect(fun(1)).toEqual(2);
+			     });
+
+			  it('leaves the argument intact if it returns undefined', 
+			     function() {
+				 var fun = new Signature()
+				     .argument(function() {
+						   return;
+					       })
+				     .check(function(a) { return a; });
+				 expect(fun(1)).toEqual(1);
+			     });
+
 		      });
 	     describe('#arguments', function() {
 			  it('adds a verifier for all arguments', function() {
