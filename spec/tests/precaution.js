@@ -13,6 +13,31 @@ describe('Interface', function(){
 					.check(new Example()))
 				     .toBeDefined();
 			     });
+
+			  it('does not apply an already applied interface', 
+			     function() {
+				 var called = 0;
+				 var i = new Interface('i')
+				     .method('foo', new Signature()
+					     .argument(function(v) {
+							   called ++;	   
+						       }));
+				 var obj = { foo: function() {} };
+				 obj = i.check(i.check(obj));
+				 obj.foo();
+				 expect(called).toEqual(1);
+			     });
+
+			  it('throws if non identical ifs with same name are applied', 
+			     function() {
+				 var called = 0;
+				 var i = new Interface('i');
+				 var i2 = new Interface('i');
+				 var obj = {};
+				 expect(function() {
+					    i2.check(i.check(obj));
+					}).toThrow();
+			     });
 		      });
 
 	     describe('#and', function() {
@@ -21,16 +46,20 @@ describe('Interface', function(){
 				 var p = {
 				     'aMethod': function() {},
 				     'bMethod': function() {},
-				     'cMethod': function() {}
+				     'cMethod': function() {},
+				     'dMethod': function() {}
 				 };
 				 p = new Interface('a')
 				     .method('aMethod')
 				     .and(new Interface('b')
-					  .method('bMethod'))
+					  .method('bMethod')
+					  .and(new Interface('c')
+					       .method('cMethod')))
 				     .check(p);
 				 expect(p.aMethod).toBeDefined();
 				 expect(p.bMethod).toBeDefined();
-				 expect(p.cMethod).toBeUndefined();
+				 expect(p.cMethod).toBeDefined();
+				 expect(p.dMethod).toBeUndefined();
 			    });
 		      });
 

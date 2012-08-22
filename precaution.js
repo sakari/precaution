@@ -2,7 +2,7 @@
 function Interface(interfaceName) {
     this._name = interfaceName;
     this._methods = {};
-    this._interfaces = [this];
+    this._interfaces = [];
 }
 
 Interface.prototype.method = function(name, signature) {
@@ -20,15 +20,23 @@ Interface.prototype.and = function(i) {
 };
 
 Interface.prototype.check = function(ob) {
-    var checked = new CheckedObject(ob);
+    var checked = checkedObject(ob);
+    checked._applyInterface(this);
     for (var i in this._interfaces)
-	checked._applyInterface(this._interfaces[i]);
+	this._interfaces[i].check(checked);
     return checked;
+};
+
+function checkedObject (ob) {
+    if (ob.__magic_precaution_checkedObject_flag)
+	return ob;
+    return new CheckedObject(ob);
 };
 
 function CheckedObject (ob) {
     this._object = ob;
     this.__interfaces = {};
+    this.__magic_precaution_checkedObject_flag = true;
 };
 
 CheckedObject.prototype._interfaces = function (ob) {
@@ -36,6 +44,14 @@ CheckedObject.prototype._interfaces = function (ob) {
 };
 
 CheckedObject.prototype._applyInterface = function (i) {
+    for(var existing in this.__interfaces)
+	if (existing === i._name) {
+	    if (this.__interfaces[existing] !== i)
+		throw new Error('Tried to apply an interface with a name that is already used');
+	    return this;
+	}
+	    
+
     var self = this;
     for(var key in i._methods) {
 	if (!this._object[key]) {
