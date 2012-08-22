@@ -28,7 +28,8 @@ Interface.prototype.check = function(ob) {
 };
 
 function Signature() {
-    this._argument = [];    
+    this._argument = [];
+    this._returns = function() {};
 }
 
 Signature.prototype.argument = function(i) {
@@ -63,9 +64,8 @@ Signature.prototype._checkArguments = function(args) {
 };
 
 Signature.prototype._checkReturn = function(val) {
-    if (this._returns)
-	this._returns.call(this._returns, val);
-    return val;
+    var r = this._returns.call(this._returns, val);
+    return ( r === undefined ? val : r);
 };
 
 Signature.prototype.check = function(fn) {

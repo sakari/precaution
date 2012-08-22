@@ -146,5 +146,15 @@ describe('Signature', function() {
 				       }).toThrow();
 				expect(fun(1)).toEqual(1);
 			    });
+
+			  it('may return a new value to be used as return value', 
+			    function() {
+				var fun = new Signature()
+				    .returns(function(v) {
+						 return 2;
+					     })
+				    .check(function(a) { return a; });
+				expect(fun(1)).toEqual(2);
+			    });
 		      });
 	 });
