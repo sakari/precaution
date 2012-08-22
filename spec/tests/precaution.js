@@ -81,6 +81,15 @@ describe('Interface', function(){
 					}).toThrow();
 			     });
 
+			  it('requires that the object method has `.apply`',
+			     function() {
+				 expect(function() {
+					    new Interface('i')
+						.method('foo')
+						.check({ foo: 'value' });
+					}).toThrow();
+			     });
+
 			  it('may define a signature for the method', 
 			    function() {
 				var obj = new Interface('If')

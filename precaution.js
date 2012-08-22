@@ -57,6 +57,9 @@ CheckedObject.prototype._applyInterface = function (i) {
 	if (!this._object[key]) {
 	    throw new Error('Required method missing: ' + key);
 	}
+	if (!this._object[key].apply) {
+	    throw new Error('The interface method must have `.apply`');
+	}
 	this[key] = i._methods[key]
 	    .check(function() {
 		       return self._object[key].apply(self._object, arguments);
