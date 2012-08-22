@@ -95,7 +95,7 @@ describe('Signature', function() {
 					   fun();
 				       }).toThrow();
 			    });
-			  
+
 			  it('may return a value to be used in the checked fun', 
 			     function() {
 				 var fun = new Signature()
@@ -155,6 +155,64 @@ describe('Signature', function() {
 					     })
 				    .check(function(a) { return a; });
 				expect(fun(1)).toEqual(2);
+			    });
+		      });
+	 });
+
+describe('Check', function() {
+	     describe('#predicate', function() {
+			  it('checks that the predicate holds', function() {
+				 var c = new Check()
+				     .predicate(function(p) {
+						    if (p < 0)
+							throw new Error();
+						});
+				 expect(c.call(c, 1)).toEqual(1);
+				 expect(function() {
+					    c.check(-1);
+					}).toThrow();
+			     });
+			  it('may modify the returned value', function() {
+				 var c = new Check()
+				     .predicate(function(p) {
+						    return p + 1;
+						});
+				 expect(c.call(c, 1)).toEqual(2);
+			     });
+
+			  it('multiple predicates may be chained', function() {
+				 function add(p) {
+				     return p + 1;
+				 }
+				 var c = new Check()
+				     .predicate(add)
+				     .predicate(add);
+				 expect(c.call(c, 1)).toEqual(3);
+			     });
+		      });
+
+	     describe('#hasInterface', function() {
+			  it('applies an interface to the value', function() {
+				 var c = new Check()
+				     .hasInterface(new Interface('If')
+						   .method('foo'));
+				 expect(c.call(c, { foo: function() {}}))
+				     .toBeDefined();
+				 expect(function() {
+					c.call(c, {}); 
+					}).toThrow();
+			     });
+		      });
+
+	     describe('#isDefined', function() {
+			 it('requires that the value is defined', 
+			    function() {
+				var c = new Check()
+				    .isDefined();
+				expect(function() {
+					   c.call(c, undefined);
+				       }).toThrow();
+				expect(c.call(c, 1)).toEqual(1);
 			    });
 		      });
 	 });

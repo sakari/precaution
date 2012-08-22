@@ -77,6 +77,37 @@ Signature.prototype.check = function(fn) {
     };
 };
 
+function Check() {
+    this._predicates = [];
+}
+
+Check.prototype.predicate = function(p) {
+    this._predicates.push(p);
+    return this;
+};
+
+Check.prototype.isDefined = function(i) {
+    this.predicate(function(v) {
+		       if (v === undefined)
+			   throw new Error('Argument should not be undefined');
+		   });
+    return this;
+};
+
+Check.prototype.hasInterface = function(i) {
+    this.predicate(function(v) {
+		       return i.check(v);
+		   });
+    return this;
+};
+
+Check.prototype.call = function(self, v) {
+    for (var p in self._predicates) {
+	var n = self._predicates[p](v);
+	v = (n === undefined ? v : n);
+    }
+    return v;
+};
 
 
 
