@@ -283,8 +283,23 @@ describe('Check', function() {
 			     });
 		      });
 
+	     describe('#hasSignature', function() {
+			 it('applies a signature to the value function', 
+			    function() {
+				var c = new Check()
+				    .hasSignature(new Signature()
+						  .argument(function(a) {
+								return a + 1;
+							    }));
+				function test(a) {
+				    return a;
+				}
+				expect(c.call(c, test)(1)).toEqual(2);
+			    });
+		      });
+
 	     describe('#isDefined', function() {
-			 it('requires that the value is defined', 
+			 it('requires that the value is not undefined', 
 			    function() {
 				var c = new Check()
 				    .isDefined();
@@ -293,5 +308,33 @@ describe('Check', function() {
 				       }).toThrow();
 				expect(c.call(c, 1)).toEqual(1);
 			    });
+
+			  it('requires that the value is not null', 
+			     function() {
+				 var c = new Check()
+				     .isDefined();
+				 expect(function() {
+					    c.call(c, null);
+					}).toThrow();
+			     });
+		      });
+
+	     describe('#hasTypeOf', function() {
+			  it('requires that the value has the specified typeof', 
+			     function() {
+				 var c = new Check()
+				     .hasTypeOf('boolean');
+				 expect(function() {
+					c.call(c, "abc");
+					}).toThrow();
+				 expect(c.call(c, true))
+				     .toEqual(true);
+			    });
+			  it('allows undefined and null values', function() {
+				 var c = new Check()
+				     .hasTypeOf('boolean');
+				 expect(c.call(c, undefined)).toEqual(undefined);
+				 expect(c.call(c, null)).toEqual(null);
+			     });
 		      });
 	 });

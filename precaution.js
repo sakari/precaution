@@ -113,7 +113,7 @@ Check.prototype.predicate = function(p) {
 
 Check.prototype.isDefined = function(i) {
     this.predicate(function(v) {
-		       if (v === undefined)
+		       if (v === undefined || v === null)
 			   throw new Error('Argument should not be undefined');
 		   });
     return this;
@@ -122,6 +122,24 @@ Check.prototype.isDefined = function(i) {
 Check.prototype.hasInterface = function(i) {
     this.predicate(function(v) {
 		       return i.check(v);
+		   });
+    return this;
+};
+
+Check.prototype.hasSignature = function(i) {
+    this.predicate(function(v) {
+		       return i.check(v);
+		   });
+    return this;
+};
+
+Check.prototype.hasTypeOf = function(t) {
+    this.predicate(function(v) {
+		       if (v === undefined || v === null)
+			   return;
+		       if (typeof(v) !== t)
+			   throw new Error('Argument should have typeof ' +
+					  t + ' : ' + v);
 		   });
     return this;
 };
