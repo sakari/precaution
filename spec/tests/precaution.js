@@ -8,6 +8,15 @@ describe('Interface', function(){
 	     };
 
 	     describe('#check', function() {
+			  it('returns an object matching the interface when passed a spy object', 
+			     function() {
+				 var s = spy();
+				 var i = interface()
+				     .method('fun');
+				 expect(i.check(s).fun)
+				     .toBeDefined();
+			     });
+
 			  it('returns a checked object', function() {
 				 expect(interface('If')
 					.check(new Example()))
@@ -390,5 +399,101 @@ describe('Check', function() {
 				 expect(c.call(c, undefined)).toEqual(undefined);
 				 expect(c.call(c, null)).toEqual(null);
 			     });
+		      });
+	 });
+
+describe('spy', function() {
+	     describe('#method', function() {
+			  it('specifies a spied method for object', function() {
+				 var s = spy().
+				     method('fun');
+				 expect(s.fun).toBeDefined();
+			     });
+		      });
+
+	     describe('#child', function() {
+			  it('returns a new spy method that is verified when the prarent is', 
+			     function() {
+				 var s = spy();
+				 s.child()
+				     .method('fun', spyMethod()
+					     .mustBeCalled());
+				 expect(function() {
+					    s.verify();
+					}).toThrow();
+			     });
+
+			  it('succeeds in verifying if the child succeeds',
+			     function() {
+				 var s = spy();
+				 s.child()
+				     .method('fun', spyMethod()
+					     .mustBeCalled())
+				     .fun();
+				 s.verify();
+			    });
+		      });
+	 });
+
+describe('spyMethod', function() {
+	     describe('#whenCalled', function(){
+			  it('defines a function to be executed when the function is called');
+			  var called;
+			  var s = spy()
+			      .method('fun', 
+				      spyMethod().whenCalled(function(a, b) {
+								 called = [a, b];
+								 return b;
+							     })
+				     );
+			  expect(s.fun(1, 2)).toEqual(2);
+			  expect(called).toEqual([1, 2]);
+		      });
+	     describe('#returns', function() {
+			  it('returns a function that returns the given value', 
+			     function() {
+				 var s = spy().method('fun', spyMethod()
+						      .returns(1));
+				 expect(s.fun()).toEqual(1);
+			     });
+		      });
+
+	     describe('#mustBeCalled', function() {
+			  it('fails if the method is not called before verify', 
+			     function() {
+				 var s = spy().method('fun', spyMethod()
+						      .mustBeCalled());
+				 expect(function() {
+					s.verify();
+					}).toThrow();
+			     });
+
+			  it('succeeds if the method was called',
+			    function() {
+				var s = spy().method('fun', spyMethod()
+						     .mustBeCalled());
+				s.fun();
+				expect(s.verify());
+			    });
+
+			  it('fails if the method was called too few times',
+			    function() {
+				var s = spy().method('fun', spyMethod()
+						     .mustBeCalled(2));
+				s.fun();
+				expect(function() {
+					   s.verify();
+				       }).toThrow();
+			    });
+
+			  it('fails if the method was called too many times',
+			    function() {
+				var s = spy().method('fun', spyMethod()
+						     .mustBeCalled(1, 2));
+				s.fun();
+				expect(function() {
+					   s.fun();
+				       }).toThrow();
+			    });
 		      });
 	 });

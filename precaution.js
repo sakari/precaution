@@ -28,11 +28,101 @@ Interface.prototype.check = function(ob) {
     return checkedObject(ob, this);
 };
 
+function spyMethod() {
+    return new SpyMethod();
+}
+
+function SpyMethod() {
+    this._funs = [];
+    this._expectations= [];
+}
+
+SpyMethod.prototype.verify = function() {
+    for(var e in this._expectations) {
+	if(!this._expectations[e].resolved)
+	    return false;
+    }
+    return true;
+};
+
+SpyMethod.prototype.returns = function(v) {
+    this.whenCalled(function() { return v; });
+    return this;
+};
+
+SpyMethod.prototype.mustBeCalled = function(atLeast, atMost) {
+    atLeast = (atLeast === undefined ? 1 : atLeast);
+    
+    var expectation = {};
+    this._expectations.push(expectation);
+    this.whenCalled(function() {
+			if(--atLeast <= 0)
+			    expectation.resolved = true;
+			if(atMost !== undefined &&
+			   --atMost <= 0)
+			    throw new Error('Spy method called too many times');
+			    
+		    });
+    return this;
+};
+
+SpyMethod.prototype.whenCalled = function(fun) {
+    this._funs.push(fun);
+    return this;
+};
+
+SpyMethod.prototype.apply = function(ctx, args) {
+    var r;
+    for(var f in this._funs)
+	r = this._funs[f].apply(ctx, args);
+    return r;
+};
+
+function spy() {
+    return new Spy();
+}
+
+function Spy() {
+    this._spyMethods = {};
+    this._children = [];
+}
+
+Spy.prototype.child = function() {
+    var s = spy();
+    this._children.push(s);
+    return s;
+};
+
+Spy.prototype.verify = function() {
+    for(var m in this._spyMethods) {
+	if(!this._spyMethods[m].verify())
+	    throw new Error('Unresolved spy method: ' + m);
+    }
+    for(var c in this._children) {
+	this._children[c].verify();
+    }
+};
+
+Spy.prototype.method = function(name, fun) {
+    var self = this;
+    if (!this[name])
+	if (fun instanceof SpyMethod)
+	    this._spyMethods[name] = fun;
+	this[name] = function() {
+	    if(fun)
+		return fun.apply(self, arguments);
+	};
+    return this;
+};
+
 function checkedObject (ob, i) {
     if (ob instanceof CheckedObject && 
 	ob._interface === i
        )
 	return ob;
+    if (ob instanceof Spy)
+	for(var m in i._methods)
+	    ob.method(m);
     return new CheckedObject(ob, i);
 };
 
