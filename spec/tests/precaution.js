@@ -9,7 +9,7 @@ describe('Interface', function(){
 
 	     describe('#check', function() {
 			  it('returns a checked object', function() {
-				 expect(new Interface('If')
+				 expect(interface('If')
 					.check(new Example()))
 				     .toBeDefined();
 			     });
@@ -17,8 +17,8 @@ describe('Interface', function(){
 			  it('does not apply an already applied interface', 
 			     function() {
 				 var called = 0;
-				 var i = new Interface('i')
-				     .method('foo', new Signature()
+				 var i = interface('i')
+				     .method('foo', signature()
 					     .argument(function(v) {
 							   called ++;	   
 						       }));
@@ -28,10 +28,10 @@ describe('Interface', function(){
 				 expect(called).toEqual(1);
 			     });
 			  it('may narrow existing interface', function() {
-				 var i = new Interface()
+				 var i = interface()
 				     .method('a')
 				     .method('b');
-				 var k = new Interface()
+				 var k = interface()
 				     .method('a');
 				 var obj = k.check(i.check({
 							       a: function() {},
@@ -51,12 +51,12 @@ describe('Interface', function(){
 				     'cMethod': function() {},
 				     'dMethod': function() {}
 				 };
-				 p = new Interface()
+				 p = interface()
 				     .method('aMethod')
-				     .and(new Interface()
-					  .and(new Interface()
+				     .and(interface()
+					  .and(interface()
 					       .method('bMethod'))
-					  .and(new Interface()
+					  .and(interface()
 					       .method('cMethod')))
 				     .check(p);
 				 expect(p.aMethod).toBeDefined();
@@ -70,7 +70,7 @@ describe('Interface', function(){
 			  it('defines a method required for the interface', 
 			     function() {
 				 expect(function() {
-					    new Interface('If')
+					    interface('If')
 						.method('missingMethod')
 						.check(new Example());
 					}).toThrow();
@@ -79,7 +79,7 @@ describe('Interface', function(){
 			  it('does not allow starting underscore', 
 			     function() {
 				 expect(function() {
-					    new Interface('i')
+					    interface('i')
 						.method('_private');
 					}).toThrow();
 			     });
@@ -87,7 +87,7 @@ describe('Interface', function(){
 			  it('requires that the object method has `.apply`',
 			     function() {
 				 expect(function() {
-					    new Interface('i')
+					    interface('i')
 						.method('foo')
 						.check({ foo: 'value' });
 					}).toThrow();
@@ -95,9 +95,9 @@ describe('Interface', function(){
 
 			  it('may define a signature for the method', 
 			    function() {
-				var obj = new Interface('If')
+				var obj = interface('If')
 				    .method('exampleMethod', 
-					    new Signature()
+					    signature()
 					    .argument(function(a) {
 							  if (a < 0)
 							      throw new Error();
@@ -122,7 +122,7 @@ describe('CheckedObject', function() {
 
 	     it('has methods defined in the interface ', 
 		function() {
-		    expect(new Interface('If')
+		    expect(interface('If')
 			   .method('exampleMethod')
 			   .check(new Example())
 			   .exampleMethod(123))
@@ -131,7 +131,7 @@ describe('CheckedObject', function() {
 
 	     it('does not have methods not in the interface',
 		function() {
-		    expect(new Interface('If')
+		    expect(interface('If')
 			   .check(new Example())
 			   .exampleMethod)
 			.toBeUndefined();
@@ -143,7 +143,7 @@ describe('Signature', function() {
 	     describe('#argument', function() {
 			  it('may define a verifier fun for the argument', 
 			     function() {
-				 var fun = (new Signature()
+				 var fun = (signature()
 					    .argument(function(a) {
 							  if (a <= 0)
 							      throw new Error();
@@ -165,7 +165,7 @@ describe('Signature', function() {
 					    throw new Error();
 				    }
 				};
-				var fun = new Signature()
+				var fun = signature()
 				    .argument(check)
 				    .check(function() { return 1; });
 				expect(fun()).toEqual(1);
@@ -177,7 +177,7 @@ describe('Signature', function() {
 
 			  it('may return a value to be used in the checked fun', 
 			     function() {
-				 var fun = new Signature()
+				 var fun = signature()
 				     .argument(function() {
 						   return 2;
 					       })
@@ -187,7 +187,7 @@ describe('Signature', function() {
 
 			  it('leaves the argument intact if it returns undefined', 
 			     function() {
-				 var fun = new Signature()
+				 var fun = signature()
 				     .argument(function() {
 						   return;
 					       })
@@ -198,7 +198,7 @@ describe('Signature', function() {
 		      });
 	     describe('#arguments', function() {
 			  it('adds a verifier for all arguments', function() {
-				var fun = new Signature()
+				var fun = signature()
 				     .arguments(function(args) {
 						    if (args.length !== 1)
 							throw new Error();
@@ -214,7 +214,7 @@ describe('Signature', function() {
 	     describe('#returns', function() {
 			  it('may define a verifier fun for the result', 
 			    function() {
-				var fun = new Signature()
+				var fun = signature()
 				    .returns(function(v) {
 						 if (v <= 0)
 						     throw new Error();
@@ -228,7 +228,7 @@ describe('Signature', function() {
 
 			  it('may return a new value to be used as return value', 
 			    function() {
-				var fun = new Signature()
+				var fun = signature()
 				    .returns(function(v) {
 						 return 2;
 					     })
@@ -241,7 +241,7 @@ describe('Signature', function() {
 describe('Check', function() {
 	     describe('#predicate', function() {
 			  it('checks that the predicate holds', function() {
-				 var c = new Check()
+				 var c = check()
 				     .predicate(function(p) {
 						    if (p < 0)
 							throw new Error();
@@ -252,7 +252,7 @@ describe('Check', function() {
 					}).toThrow();
 			     });
 			  it('may modify the returned value', function() {
-				 var c = new Check()
+				 var c = check()
 				     .predicate(function(p) {
 						    return p + 1;
 						});
@@ -263,7 +263,7 @@ describe('Check', function() {
 				 function add(p) {
 				     return p + 1;
 				 }
-				 var c = new Check()
+				 var c = check()
 				     .predicate(add)
 				     .predicate(add);
 				 expect(c.call(c, 1)).toEqual(3);
@@ -272,8 +272,8 @@ describe('Check', function() {
 
 	     describe('#hasInterface', function() {
 			  it('applies an interface to the value', function() {
-				 var c = new Check()
-				     .hasInterface(new Interface('If')
+				 var c = check()
+				     .hasInterface(interface('If')
 						   .method('foo'));
 				 expect(c.call(c, { foo: function() {}}))
 				     .toBeDefined();
@@ -286,8 +286,8 @@ describe('Check', function() {
 	     describe('#hasSignature', function() {
 			 it('applies a signature to the value function', 
 			    function() {
-				var c = new Check()
-				    .hasSignature(new Signature()
+				var c = check()
+				    .hasSignature(signature()
 						  .argument(function(a) {
 								return a + 1;
 							    }));
@@ -301,7 +301,7 @@ describe('Check', function() {
 	     describe('#isDefined', function() {
 			 it('requires that the value is not undefined', 
 			    function() {
-				var c = new Check()
+				var c = check()
 				    .isDefined();
 				expect(function() {
 					   c.call(c, undefined);
@@ -311,7 +311,7 @@ describe('Check', function() {
 
 			  it('requires that the value is not null', 
 			     function() {
-				 var c = new Check()
+				 var c = check()
 				     .isDefined();
 				 expect(function() {
 					    c.call(c, null);
@@ -322,7 +322,7 @@ describe('Check', function() {
 	     describe('#hasTypeOf', function() {
 			  it('requires that the value has the specified typeof', 
 			     function() {
-				 var c = new Check()
+				 var c = check()
 				     .hasTypeOf('boolean');
 				 expect(function() {
 					c.call(c, "abc");
@@ -331,7 +331,7 @@ describe('Check', function() {
 				     .toEqual(true);
 			    });
 			  it('allows undefined and null values', function() {
-				 var c = new Check()
+				 var c = check()
 				     .hasTypeOf('boolean');
 				 expect(c.call(c, undefined)).toEqual(undefined);
 				 expect(c.call(c, null)).toEqual(null);

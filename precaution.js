@@ -1,4 +1,8 @@
 
+function interface(name) {
+    return new Interface(name);  
+};
+
 function Interface(interfaceName) {
     this._name = interfaceName || "Unnamed interface";
     this._methods = {};
@@ -52,6 +56,10 @@ function CheckedObject (ob, i) {
     return this;
 };
 
+function signature() {
+    return new Signature();
+}
+
 function Signature() {
     this._argument = [];
     this._returns = function() {};
@@ -101,6 +109,10 @@ Signature.prototype.check = function(fn) {
 				  self._checkArguments(arguments)));
     };
 };
+
+function check() {
+    return new Check();
+}
 
 function Check() {
     this._predicates = [];
