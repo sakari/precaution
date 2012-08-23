@@ -127,6 +127,19 @@ Check.prototype.predicate = function(p) {
     return this;
 };
 
+Check.prototype.equals = function() {
+    var args = arguments;
+    this._predicates.push(function(v) {
+			      for(var a in args) {
+				  if(args[a] === v)
+				      return;
+			      }
+			      throw new Error('Value did not equal any option: ' +
+					      v);
+			  });
+    return this;
+};
+
 Check.prototype.either = function() {
     var args = arguments;
     this._predicates.push(function(v) {

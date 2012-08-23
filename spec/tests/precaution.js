@@ -312,6 +312,23 @@ describe('Check', function() {
 			    });
 		      });
 
+	     describe('#equals', function() {
+			  it('fails if value is not === equal to any option',
+			    function() {
+				var c = check().equals(1, 2);
+				expect(function() {
+					   c.call(c, 3);
+				       }).toThrow();
+			    });
+
+			  it('succeeds if value is === to some options', 
+			    function() {
+				var c = check().equals(1, 'value');
+				expect(c.call(c, 1)).toEqual(1);
+				expect(c.call(c, 'value')).toEqual('value');
+			    });
+		      });
+
 	     describe('#either', function() {
 			  it('requires that one of the given checks holds',
 			    function() {
