@@ -27,21 +27,23 @@ describe('Interface', function(){
 				 obj.foo();
 				 expect(called).toEqual(1);
 			     });
-
-			  it('throws if non identical ifs with same name are applied', 
-			     function() {
-				 var called = 0;
-				 var i = new Interface('i');
-				 var i2 = new Interface('i');
-				 var obj = {};
-				 expect(function() {
-					    i2.check(i.check(obj));
-					}).toThrow();
+			  it('may narrow existing interface', function() {
+				 var i = new Interface()
+				     .method('a')
+				     .method('b');
+				 var k = new Interface()
+				     .method('a');
+				 var obj = k.check(i.check({
+							       a: function() {},
+							       b: function() {}
+							   }));
+				 expect(obj.a).toBeDefined();
+				 expect(obj.b).toBeUndefined();
 			     });
 		      });
 
 	     describe('#and', function() {
-			  it('allows combining interfaces', 
+			  it('combines interfaces', 
 			     function() {
 				 var p = {
 				     'aMethod': function() {},
@@ -49,11 +51,12 @@ describe('Interface', function(){
 				     'cMethod': function() {},
 				     'dMethod': function() {}
 				 };
-				 p = new Interface('a')
+				 p = new Interface()
 				     .method('aMethod')
-				     .and(new Interface('b')
-					  .method('bMethod')
-					  .and(new Interface('c')
+				     .and(new Interface()
+					  .and(new Interface()
+					       .method('bMethod'))
+					  .and(new Interface()
 					       .method('cMethod')))
 				     .check(p);
 				 expect(p.aMethod).toBeDefined();
@@ -133,20 +136,6 @@ describe('CheckedObject', function() {
 			   .exampleMethod)
 			.toBeUndefined();
 		});
-
-	     describe('#_interfaces', function() {
-			  it('return all interfaces', 
-			     function() {
-				 var p = {};
-				 p = new Interface('a')
-				     .and(new Interface('b'))
-				     .check(p);
-				 expect(p._interfaces().a)
-				     .toBeDefined();
-				 expect(p._interfaces().b)
-				     .toBeDefined();
-			     });
-		      });
 	 });
 
 

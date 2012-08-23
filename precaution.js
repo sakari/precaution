@@ -1,8 +1,7 @@
 
 function Interface(interfaceName) {
-    this._name = interfaceName;
+    this._name = interfaceName || "Unnamed interface";
     this._methods = {};
-    this._interfaces = [];
 }
 
 Interface.prototype.method = function(name, signature) {
@@ -15,44 +14,29 @@ Interface.prototype.method = function(name, signature) {
 };
 
 Interface.prototype.and = function(i) {
-    this._interfaces.push(i);
+    for(var m in i._methods) {
+	this._methods[m] = i._methods[m];
+    }
     return this;
 };
 
 Interface.prototype.check = function(ob) {
-    var checked = checkedObject(ob);
-    checked._applyInterface(this);
-    for (var i in this._interfaces)
-	this._interfaces[i].check(checked);
-    return checked;
+    return checkedObject(ob, this);
 };
 
-function checkedObject (ob) {
-    if (ob.__magic_precaution_checkedObject_flag)
+function checkedObject (ob, i) {
+    if (ob instanceof CheckedObject && 
+	ob._interface === i
+       )
 	return ob;
-    return new CheckedObject(ob);
+    return new CheckedObject(ob, i);
 };
 
-function CheckedObject (ob) {
+function CheckedObject (ob, i) {
     this._object = ob;
-    this.__interfaces = {};
-    this.__magic_precaution_checkedObject_flag = true;
-};
-
-CheckedObject.prototype._interfaces = function (ob) {
-    return this.__interfaces;
-};
-
-CheckedObject.prototype._applyInterface = function (i) {
-    for(var existing in this.__interfaces)
-	if (existing === i._name) {
-	    if (this.__interfaces[existing] !== i)
-		throw new Error('Tried to apply an interface with a name that is already used');
-	    return this;
-	}
-	    
-
+    this._interface = i;
     var self = this;
+
     for(var key in i._methods) {
 	if (!this._object[key]) {
 	    throw new Error('Required method missing: ' + key);
@@ -65,7 +49,6 @@ CheckedObject.prototype._applyInterface = function (i) {
 		       return self._object[key].apply(self._object, arguments);
 		   });
     }
-    this.__interfaces[i._name] = i;
     return this;
 };
 
