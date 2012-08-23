@@ -5,4 +5,5 @@ src_files:
 spec_dir: spec/tests
 spec_files:
  - **/*.js
+ - ../../example.js
 

@@ -1,6 +1,7 @@
 # Precaution
 
-Cautionary javascript programming with contracts.
+Cautious javascript programming with contracts. See example.js for
+quick starter and spec/tests/precaution.js for details.
 
 # Licence (MIT license)
 
