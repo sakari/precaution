@@ -312,6 +312,29 @@ describe('Check', function() {
 			    });
 		      });
 
+	     describe('#either', function() {
+			  it('requires that one of the given checks holds',
+			    function() {
+				var c = check()
+				    .either(check().hasTypeOf('boolean'),
+					    check().hasTypeOf('number'));
+				expect(function() {
+				       c.call(c, "fail");
+				       }).toThrow();
+				expect(c.call(c, 1)).toEqual(1);
+				expect(c.call(c, true)).toEqual(true);
+			    });
+
+			  it('requires that only one check holds', function() {
+				 var c = check()
+				    .either(check().hasTypeOf('boolean'),
+					    check().hasTypeOf('boolean'));
+				 expect(function() {
+					    c.call(c, true);
+					}).toThrow();
+			     });
+		      });
+
 	     describe('#isDefined', function() {
 			 it('requires that the value is not undefined', 
 			    function() {

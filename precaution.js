@@ -127,6 +127,26 @@ Check.prototype.predicate = function(p) {
     return this;
 };
 
+Check.prototype.either = function() {
+    var args = arguments;
+    this._predicates.push(function(v) {
+			      var r;
+			      var holds = 0;
+			      for(var p in args) {
+				  try {
+				      r = args[p].call(args[p], v);
+				      holds++;
+				  } catch (x) {}
+			      }
+			      if (holds > 1)
+				  throw new Error('More than one check holds');
+			      if (holds === 0)
+				  throw new Error('None of the checks hold for value');
+			      return r;
+			  });
+    return this;
+};
+
 Check.prototype.isDefined = function(i) {
     this.predicate(function(v) {
 		       if (v === undefined || v === null)
