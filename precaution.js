@@ -103,11 +103,15 @@ Signature.prototype._checkReturn = function(val) {
 
 Signature.prototype.check = function(fn) {
     var self = this;
-    return function() {
+    if (fn.__precaution_magic_signature_flag === this)
+	return fn;
+    var result = function() {
 	return self.
 	    _checkReturn(fn.apply(null,
 				  self._checkArguments(arguments)));
     };
+    result.__precaution_magic_signature_flag = this;
+    return result;
 };
 
 function check() {

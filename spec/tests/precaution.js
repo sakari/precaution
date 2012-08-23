@@ -140,6 +140,20 @@ describe('CheckedObject', function() {
 
 
 describe('Signature', function() {
+	     describe('#check', function() {
+			  it('does not reaply the signature immediately again', 
+			    function() {
+				var called = 0;
+				var s = signature()
+				    .argument(function() {
+						  called++;
+					      });
+				function test() {};
+				s.check(s.check(test))();
+				expect(called).toEqual(1);
+			    });
+		      });
+
 	     describe('#argument', function() {
 			  it('may define a verifier fun for the argument', 
 			     function() {
