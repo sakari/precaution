@@ -506,6 +506,17 @@ describe('spyMethod', function() {
 			  expect(s.fun(1, 2)).toEqual(2);
 			  expect(called).toEqual([1, 2]);
 		      });
+
+	     describe('#throws', function() {
+			  it('throws when the function is called', function() {
+				 var s = spy().method('fun', spyMethod()
+						      .throws(new Error('fail')));
+				 expect(function() {
+					s.fun();
+					}).toThrow(new Error('fail'));
+			     });
+		      });
+
 	     describe('#returns', function() {
 			  it('returns a function that returns the given value', 
 			     function() {

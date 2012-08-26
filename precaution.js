@@ -71,6 +71,13 @@ SpyMethod.prototype.whenCalled = function(fun) {
     return this;
 };
 
+SpyMethod.prototype.throws = function(err) {
+    this.whenCalled(function() {
+			throw err;
+		    });
+    return this;
+}
+
 SpyMethod.prototype.apply = function(ctx, args) {
     var r;
     for(var f in this._funs)
