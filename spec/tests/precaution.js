@@ -36,6 +36,7 @@ describe('Interface', function(){
 				 obj.foo();
 				 expect(called).toEqual(1);
 			     });
+
 			  it('may narrow existing interface', function() {
 				 var i = interface()
 				     .method('a')
@@ -250,11 +251,11 @@ describe('Signature', function() {
 		      });
 
 	     describe('#returnsSelf', function() {
+			  var sig = signature()
+			      .returnsSelf();
 			  it('fails if the call does not return the context', function() {
-				 var s = signature()
-				     .returnsSelf();
 				 var obj = {
-				     fun: s.check(function() { return 1;})
+				     fun: sig.check(function() { return 1;})
 				 };
 				 expect(function() {
 					   obj.fun();
@@ -263,15 +264,19 @@ describe('Signature', function() {
 
 			  it('succeeds if the method returns the context', 
 			     function() {
-				 var s = signature()
-				     .returnsSelf();
 				 var obj= {
-				     fun: s.check(function() { 
+				     fun: sig.check(function() { 
 						      return this;
 						  }) 
 				 };
 				 expect(obj.fun())
 				     .toEqual(obj);
+			     });
+
+			  it('returns self when called for a spy object', function() {
+				 var s = new spy();
+				 s.fun = sig.check(function() {});
+				 expect(s.fun()).toEqual(s);
 			     });
 		      });
 

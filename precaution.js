@@ -167,13 +167,20 @@ Signature.prototype.arguments = function(i) {
 
 Signature.prototype.returnsSelf = function() {
     this._returns.push(function(i, ctx) {
-			   if (!i || !ctx)
-			       throw new Error('Method should return self');
+			   if (i === undefined) {
+			       if (ctx instanceof Spy ) {
+				   return ctx;
+			       }
+			   }
+
 			   if(ctx instanceof CheckedObject) {
 			       if (i !== ctx._object)
 				   throw new Error('Method should return self');
 			       return ctx;
-			   } else if (i !== ctx) {
+			   }
+			   if (!i || !ctx)
+			       throw new Error('Method should return self'); 
+			   if (i !== ctx) {
 			       throw new Error('Method should return self');
 			   }
 		       });
