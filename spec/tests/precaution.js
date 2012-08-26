@@ -295,6 +295,17 @@ describe('Signature', function() {
 				expect(fun(1)).toEqual(1);
 			    });
 
+			  it('may define a checker for the result', 
+			     function() {
+				 var fun = signature()
+				     .returns(check().isDefined())
+				     .check(function(a) { return a;});
+				 expect(fun(1)).toEqual(1);
+				 expect(function() {
+					    fun();
+					}).toThrow();
+			     });
+
 			  it('may return a new value to be used as return value', 
 			    function() {
 				var fun = signature()

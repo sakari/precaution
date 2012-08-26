@@ -212,7 +212,7 @@ Signature.prototype._checkReturn = function(val, ctx) {
     var result;
     result = val;
     for (var r in this._returns) {
-	result = this._returns[r].call(this._returns, val, ctx);
+	result = this._returns[r].call(this._returns[r], val, ctx);
 	if (result !== undefined)
 	    val = result;
     }
