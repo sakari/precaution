@@ -118,6 +118,21 @@ describe('Interface', function(){
 					   obj.exampleMethod(-1);
 				       }).toThrow();
 			    });
+
+			  it('checks that #returnsSelf returns the CheckedObject',
+			     function() {
+				 var ob = {
+				     ret: function() {
+					 return this;
+				     }
+				 };
+				 var i = interface()
+				     .method('ret', signature()
+					     .returnsSelf());
+				 var checked = i.check(ob);
+				 expect(checked.ret())
+				     .toEqual(checked);
+			     });
 		      });
 	 });
 
@@ -231,6 +246,32 @@ describe('Signature', function() {
 					    fun(); 
 					}).toThrow();
 				 expect(fun(1)).toEqual(1);
+			     });
+		      });
+
+	     describe('#returnsSelf', function() {
+			  it('fails if the call does not return the context', function() {
+				 var s = signature()
+				     .returnsSelf();
+				 var obj = {
+				     fun: s.check(function() { return 1;})
+				 };
+				 expect(function() {
+					   obj.fun();
+					}).toThrow();
+			     });
+
+			  it('succeeds if the method returns the context', 
+			     function() {
+				 var s = signature()
+				     .returnsSelf();
+				 var obj= {
+				     fun: s.check(function() { 
+						      return this;
+						  }) 
+				 };
+				 expect(obj.fun())
+				     .toEqual(obj);
 			     });
 		      });
 

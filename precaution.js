@@ -141,7 +141,7 @@ function CheckedObject (ob, i) {
 	this[key] = i._methods[key]
 	    .check(function() {
 		       return self._object[key].apply(self._object, arguments);
-		   });
+		   }, this);
     }
     return this;
 };
@@ -152,7 +152,7 @@ function signature() {
 
 function Signature() {
     this._argument = [];
-    this._returns = function() {};
+    this._returns = [];
 }
 
 Signature.prototype.argument = function(i) {
@@ -165,8 +165,23 @@ Signature.prototype.arguments = function(i) {
     return this;
 };
 
+Signature.prototype.returnsSelf = function() {
+    this._returns.push(function(i, ctx) {
+			   if (!i || !ctx)
+			       throw new Error('Method should return self');
+			   if(ctx instanceof CheckedObject) {
+			       if (i !== ctx._object)
+				   throw new Error('Method should return self');
+			       return ctx;
+			   } else if (i !== ctx) {
+			       throw new Error('Method should return self');
+			   }
+		       });
+    return this;
+};
+
 Signature.prototype.returns = function(i) {
-    this._returns = i;
+    this._returns.push(i);
     return this;
 };
 
@@ -186,9 +201,15 @@ Signature.prototype._checkArguments = function(args) {
     return hackedArgs;
 };
 
-Signature.prototype._checkReturn = function(val) {
-    var r = this._returns.call(this._returns, val);
-    return ( r === undefined ? val : r);
+Signature.prototype._checkReturn = function(val, ctx) {
+    var result;
+    result = val;
+    for (var r in this._returns) {
+	result = this._returns[r].call(this._returns, val, ctx);
+	if (result !== undefined)
+	    val = result;
+    }
+    return val;
 };
 
 Signature.prototype.check = function(fn) {
@@ -197,8 +218,9 @@ Signature.prototype.check = function(fn) {
 	return fn;
     var result = function() {
 	return self.
-	    _checkReturn(fn.apply(null,
-				  self._checkArguments(arguments)));
+	    _checkReturn(fn.apply(this,
+				  self._checkArguments(arguments)),
+			this);
     };
     result.__precaution_magic_signature_flag = this;
     return result;
